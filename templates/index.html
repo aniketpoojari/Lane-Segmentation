@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<script type="text/javascript" src="https://code.jquery.com/jquery-1.8.0.min.js"></script>
+<body>
+	<select id="option" onchange="changeCam()">
+		<option value="user">FRONT</option>
+		<option value="environment">BACK</option>
+	</select>
+	<div>
+		<video id="cam" playsinline autoplay muted loop></video>
+	</div>
+	<div>
+		<img id="mask" width="500" height="500"> 
+	</div>
+</body>
+<script type="text/javascript">
+	    
+	    var video = document.getElementById("cam");
+	    const constraints = {audio: false, video: {width: 500, height: 500, facingMode: 'environment'}};
+			if (navigator.mediaDevices.getUserMedia) {  
+	        	
+	        	navigator.mediaDevices.getUserMedia(constraints).then(function (stream) {  
+	        		video.srcObject = stream; 
+	        	}).catch(function (err0r) { 
+	        		console.log("Something went wrong!");  
+	        	});
+	        }
+	    function changeCam(){
+	    	var video = document.getElementById("cam");
+	    	const stream = video.srcObject;
+			const tracks = stream.getTracks();
+			tracks.forEach(function(track) {track.stop();});
+			video.srcObject = null;
+
+			var c = null
+
+	    	if(document.querySelector("#option").value == "user"){
+	    		c = {audio: false, video: {width: 500, height: 500, facingMode: 'user'}};
+	    	} else {
+	    		c = {audio: false, video: {width: 500, height: 500, facingMode: 'environment'}};
+	    	}
+
+	    	const constraints = c
+
+	    	if (navigator.mediaDevices.getUserMedia) {  	
+	        	navigator.mediaDevices.getUserMedia(constraints).then(function (stream) {  
+	        		video.srcObject = stream; 
+	        	}).catch(function (err0r) { 
+	        		console.log("Something went wrong!");  
+	        	});
+	        }
+	    }
+	    // Below code to capture image from Video tag (Webcam streaming)  
+	    function send() {  
+	        // Below new canvas to generate flip/mirron image from existing canvas  
+	        var destinationCanvas = document.createElement("canvas");  
+	        var destCtx = destinationCanvas.getContext('2d');
+	  
+	        destinationCanvas.height = 500;  
+	        destinationCanvas.width = 500;  
+	  
+	        destCtx.translate(video.videoWidth, 0);  
+	        destCtx.scale(-1, 1);  
+	        destCtx.drawImage(video, 0, 0);  
+	  
+	        // Get base64 data to send to server for upload  
+	        var imagebase64data = destinationCanvas.toDataURL("image/png");  
+	        imagebase64data = imagebase64data.replace('data:image/png;base64,', '');  
+	        $.ajax({  
+	            type: 'POST',  
+	            url: "{{ url_for('test') }}",  
+	            data: imagebase64data,  
+	            contentType: 'application/json; charset=utf-8',  
+	            dataType: 'text',  
+	            success: function (out) {  
+	                document.getElementById('mask').setAttribute('src', 'data:image/jpg;base64,'+out); 
+	            },
+	            complete: function (data) {
+	            	// Schedule the next
+	            	setTimeout(send, 500);
+	        	}  
+	        });  
+	    }
+	    setTimeout(send, 500);
+</script>
+</html>

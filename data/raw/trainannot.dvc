@@ -1,0 +1,5 @@
+outs:
+- md5: d60cba8ea1dafcc5e171983b3556322a.dir
+  size: 2160319
+  nfiles: 367
+  path: trainannot

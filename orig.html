@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script type="text/javascript" src="https://code.jquery.com/jquery-1.8.0.min.js"></script>
+</head>
+<body>
+	<div style="width: 100%; overflow: hidden;">
+		<select name="cam" id="cam" onchange="changeCam()">
+			<option value="user">FRONT</option>
+			<option value="environment">BACK</option>
+		</select>
+		<div>
+			<video id="front" playsinline autoplay muted loop></video>
+			<video id="back" playsinline autoplay muted loop></video>
+		</div>
+		<div>
+			<img id="mask" width="500" height="500"> 
+		</div>
+	</div>
+</body>
+<script type="text/javascript">
+	    
+	    var videofront = document.querySelector("#front");  
+	    var videoback = document.querySelector("#back");
+	    var video = videofront;
+
+			const constraintsfront = {audio: false, video: {width: 500, height: 500, facingMode: 'user'}};
+			if (navigator.mediaDevices.getUserMedia) {  
+	        	
+	        	navigator.mediaDevices.getUserMedia(constraintsfront).then(function (stream) {  
+	        		videofront.srcObject = stream; 
+	        	}).catch(function (err0r) { 
+	        		console.log("Something went wrong!");  
+	        	});
+	        }
+
+	    	const constraintsback = {audio: false, video: {width: 500, height: 500, facingMode: 'environment'}};
+			if (navigator.mediaDevices.getUserMedia) {  
+	        	
+	        	navigator.mediaDevices.getUserMedia(constraintsback).then(function (stream) {  
+	        		videoback.srcObject = stream; 
+	        	}).catch(function (err0r) { 
+	        		console.log("Something went wrong!");  
+	        	});
+	        }
+	        videoback.style.display === "none"  
+	        videofront.style.display === "none"
+
+	function changeCam(){
+	    
+	    var videofront = document.querySelector("#front");  
+	    var videoback = document.querySelector("#back");
+
+		if(document.querySelector("#cam").value == "user"){
+			
+			const streamback = videoback.srcObject;
+			const tracksback = streamback.getTracks();
+			tracksback.forEach(function(track) {track.stop();});
+			videoback.srcObject = null;
+
+			videofront.style.display === "block"
+			const constraintsfront = {audio: false, video: {width: 500, height: 500, facingMode: 'user'}};
+			if (navigator.mediaDevices.getUserMedia) {  
+	        	
+	        	navigator.mediaDevices.getUserMedia(constraintsfront).then(function (stream) {  
+	        		videofront.srcObject = stream; 
+	        	}).catch(function (err0r) { 
+	        		console.log("Something went wrong!");  
+	        	});
+	        }
+	        videoback.style.display === "none"
+
+	        video = videofront  
+	    } else {
+
+	    	const streamfront = videofront.srcObject;
+	  		const tracksfront = streamfront.getTracks();
+  			tracksfront.forEach(function(track) {track.stop();});		
+			videofront.srcObject = null;
+
+
+	    	videoback.style.display === "block"
+			const constraintsback = {audio: false, video: {width: 500, height: 500, facingMode: 'environment'}};
+			if (navigator.mediaDevices.getUserMedia) {  
+	        	
+	        	navigator.mediaDevices.getUserMedia(constraintsback).then(function (stream) {  
+	        		videoback.srcObject = stream; 
+	        	}).catch(function (err0r) { 
+	        		console.log("Something went wrong!");  
+	        	});
+	        }
+	        videofront.style.display === "none"
+
+	        video = videoback
+	    }
+	}
+</script>  
+  
+<script type="text/javascript">  
+    // Below code to capture image from Video tag (Webcam streaming)  
+    function send() {  
+        // Below new canvas to generate flip/mirron image from existing canvas  
+        var destinationCanvas = document.createElement("canvas");  
+        var destCtx = destinationCanvas.getContext('2d');  
+  
+  
+        destinationCanvas.height = 500;  
+        destinationCanvas.width = 500;  
+  
+        destCtx.translate(video.videoWidth, 0);  
+        destCtx.scale(-1, 1);  
+        destCtx.drawImage(video, 0, 0);  
+  
+        // Get base64 data to send to server for upload  
+        var imagebase64data = destinationCanvas.toDataURL("image/png");  
+        imagebase64data = imagebase64data.replace('data:image/png;base64,', '');  
+        $.ajax({  
+            type: 'POST',  
+            url: "{{ url_for('test') }}",  
+            data: imagebase64data,  
+            contentType: 'application/json; charset=utf-8',  
+            dataType: 'text',  
+            success: function (out) {  
+                document.getElementById('mask').setAttribute('src', 'data:image/jpg;base64,'+out); 
+            },
+            complete: function (data) {
+            	// Schedule the next
+            	setTimeout(send, 500);
+        	}  
+        });  
+    }
+    setTimeout(send, 500);
+</script>
+</html>
