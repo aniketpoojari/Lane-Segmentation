@@ -1,0 +1,32 @@
+schema: '2.0'
+stages:
+  training:
+    cmd: python src/training.py --config=params.yaml
+    deps:
+    - path: data/raw
+      md5: 903a7c5b34e24e17ebc644911900abb4.dir
+      size: 186793196
+      nfiles: 1409
+    - path: src/training.py
+      md5: a8dffd82b02fccc0cf23ec833d78874b
+      size: 5886
+    params:
+      params.yaml:
+        loader.batch_size:
+        - 8
+        loader.num_workers:
+        - 3
+        loader.resize:
+        - 256
+        mlflow_config.experiment_name: LaneSegmentation
+        mlflow_config.registered_model_name: Unet
+        mlflow_config.remote_server_uri: http://localhost:5000
+        mlflow_config.run_name: 1st
+        training.epoches:
+        - 1
+        training.lr:
+        - 0.0001
+        training.num_layers:
+        - 4
+        training.start_channel:
+        - 64

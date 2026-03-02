@@ -1,0 +1,29 @@
+base:
+  project: Lane-Segmentation
+
+data:
+  train_folder: data/raw/train
+  val_folder: data/raw/val
+  test_folder: data/raw/test
+  trainannot_folder: data/raw/trainannot
+  valannot_folder: data/raw/valannot
+  testannot_folder: data/raw/testannot
+
+loader:
+  resize: [128, 256]
+  batch_size: [8, 16]
+  num_workers: [4]
+
+training:
+  epoches: [20, 30]
+  start_channel: [64, 128]
+  num_layers: [4]
+  lr: [1e-4]
+
+mlflow_config:
+  remote_server_uri: http://localhost:5000
+  experiment_name: LaneSegmentation
+  run_name: 1st
+  registered_model_name: Unet
+
+webapp_model_dir: website/model.pth
